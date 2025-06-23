@@ -34,10 +34,10 @@ if data_file:
             retries = 3
             for attempt in range(retries):
                 try:
-                    pitch = generate_pitch(row.to_dict())  # ✅ FIXED HERE
+                    pitch = generate_pitch(row.to_dict())
                     pitches.append(pitch)
                     st.markdown(f"✅ **{row['Name']}**: Pitch generated")
-                    time.sleep(1.2)
+                    time.sleep(3)  # ⏱ increased delay
                     break
                 except openai.RateLimitError:
                     if attempt < retries - 1:
@@ -78,7 +78,7 @@ with st.form("prospect_form"):
             existing = pd.DataFrame(columns=COLUMNS + ["Pitch"])
         try:
             pitch = generate_pitch(inputs)
-            time.sleep(1.2)
+            time.sleep(3)  # match delay
         except:
             pitch = "Pitch not generated"
         new_df["Pitch"] = pitch
