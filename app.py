@@ -31,19 +31,19 @@ if data_file:
         pitches, errors = [], []
 
         for i, row in df.iterrows():
-            retries = 3
-            for attempt in range(retries):
+            for attempt in range(3):
                 try:
                     pitch = generate_pitch(row.to_dict())
                     pitches.append(pitch)
                     st.markdown(f"✅ **{row['Name']}**: Pitch generated")
-                    time.sleep(3)  # ⏱ increased delay
+                    time.sleep(2)
                     break
                 except openai.RateLimitError:
-                    if attempt < retries - 1:
-                        time.sleep(3)
-                    else:
-                        st.error(f"⚠️ Rate limit hit. Skipping: {row['Name']}")
+                    wait_time = 2 ** attempt  # 2s, 4s, 8s
+                    st.warning(f"⚠️ Rate limit hit for {row['Name']}. Retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                    if attempt == 2:
+                        st.error(f"❌ Skipping {row['Name']} after 3 attempts.")
                         pitches.append("Rate limit error")
                         errors.append(i)
                 except Exception as e:
@@ -54,7 +54,7 @@ if data_file:
 
         while len(pitches) < len(df):
             pitches.append("Pitch not generated")
-            errors.append(len(pitches)-1)
+            errors.append(len(pitches) - 1)
 
         df["Pitch"] = pitches
         save_data(df, "prospects_with_pitch.csv")
@@ -78,13 +78,14 @@ with st.form("prospect_form"):
             existing = pd.DataFrame(columns=COLUMNS + ["Pitch"])
         try:
             pitch = generate_pitch(inputs)
-            time.sleep(3)  # match delay
-        except:
+            time.sleep(2)
+        except Exception as e:
+            st.error(f"⚠️ Error generating pitch: {e}")
             pitch = "Pitch not generated"
         new_df["Pitch"] = pitch
         combined = pd.concat([existing, new_df], ignore_index=True)
         save_data(combined, "prospects_with_pitch.csv")
-        st.success("Added.")
+        st.success("Prospect added.")
 
 # Show table
 st.subheader("Prospect List with Pitches")
