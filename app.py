@@ -34,7 +34,7 @@ if data_file:
             retries = 3
             for attempt in range(retries):
                 try:
-                    pitch = generate_pitch(row)
+                    pitch = generate_pitch(row.to_dict())  # ✅ FIXED HERE
                     pitches.append(pitch)
                     st.markdown(f"✅ **{row['Name']}**: Pitch generated")
                     time.sleep(1.2)
